@@ -1,5 +1,5 @@
 import { inject, injectable } from 'telebuilder/decorators';
-import { ChannelPost, TextEntity } from '../types.js';
+import { ChannelPost, ExportedMessage, TextEntity } from '../types.js';
 import { config } from 'telebuilder/config';
 import { join as joinPaths } from 'node:path';
 import { readFile, writeFile, mkdir, readdir } from 'node:fs/promises';
@@ -31,61 +31,53 @@ export class ChannelExportService {
   constructor() { }
 
   public async extractPosts(): Promise<void> {
-    const data = JSON.parse(await readFile(this.jsonFile, 'utf-8'));
+    const data: {
+      messages: ExportedMessage[];
+    } = JSON.parse(await readFile(this.jsonFile, 'utf-8'));
 
-    for (const [i, m] of data.messages.entries()) {
-      if ((m?.media_type && !['video_file', 'animation'].includes(m.media_type)) ||
-        m?.type === 'service' ||
-        m?.date_unixtime === '0'
-      ) continue;
+    for (const [i, msg] of data.messages.entries()) {
+      if (this.skipMessage(msg)) continue;
 
-      if (!m.text && m.date_unixtime !== data.messages[i - 1]?.date_unixtime) {
-        const media = m?.photo || m?.thumbnail;
-        const post: ChannelPost = {
-          id: m.id,
-          groupIds: (media ? [m.id] : []),
-          date: m.date_unixtime,
-          content: '',
-          title: this.setTitle(''),
-          mediaSource: (media ? [media] : []),
-          mediaDestination: [],
-          relMediaDestination: []
-        };
-
+      if (msg.date_unixtime !== data.messages[i - 1]?.date_unixtime) {
+        const post = this.createNewPost(msg);
         this.posts.push(post);
-      } else if (!m.text && m.date_unixtime === data.messages[i - 1]?.date_unixtime) {
-        const media = m?.photo || m?.thumbnail;
-        if (media) this.posts[this.posts.length - 1].mediaSource.push(media);
-        this.posts[this.posts.length - 1].groupIds.push(m.id);
-      } else if (m.text && m.date_unixtime === data.messages[i - 1]?.date_unixtime) {
-        const content = m.text_entities.map((e: TextEntity) => {
-          return this.convertToMdHtml(e);
-        }).join('');
-        const media = m?.photo || m?.thumbnail;
+      } else {
+        const media = msg?.photo || msg?.thumbnail;
+        const content = this.buildContent(msg.text_entities);
 
-        this.posts[this.posts.length - 1].content = content;
+        if (media) this.posts[this.posts.length - 1].mediaSource.push(media);
+        this.posts[this.posts.length - 1].groupIds.push(msg.id);
+        if (content) this.posts[this.posts.length - 1].content = content;
         this.posts[this.posts.length - 1].title = this.setTitle(content);
-        if (media) this.posts[this.posts.length - 1].mediaSource.push(media);
-        this.posts[this.posts.length - 1].groupIds.push(m.id);
-      } else if (m.text && m.date_unixtime !== data.messages[i - 1]?.date_unixtime) {
-        const content = m.text_entities.map((e: TextEntity) => {
-          return this.convertToMdHtml(e);
-        }).join('');
-        const media = m?.photo || m?.thumbnail;
-        const post: ChannelPost = {
-          id: m.id,
-          groupIds: (media ? [m.id] : []),
-          date: m.date_unixtime,
-          content,
-          title: this.setTitle(content),
-          mediaSource: (media ? [media] : []),
-          mediaDestination: [],
-          relMediaDestination: []
-        };
-
-        this.posts.push(post);
       }
     }
+  }
+
+  private skipMessage(msg: ExportedMessage): boolean {
+    return (msg?.media_type && !['video_file', 'animation'].includes(msg.media_type)) ||
+      msg?.type === 'service' ||
+      msg?.date_unixtime === '0';
+  }
+
+  private createNewPost(msg: ExportedMessage): ChannelPost {
+    const media = msg?.photo || msg?.thumbnail;
+    const content = this.buildContent(msg.text_entities);
+    return {
+      id: msg.id,
+      groupIds: (media ? [msg.id] : []),
+      date: msg.date_unixtime,
+      content,
+      title: this.setTitle(content),
+      mediaSource: (media ? [media] : []),
+      mediaDestination: [],
+      relMediaDestination: []
+    };
+  }
+
+  private buildContent(entities: TextEntity[]): string {
+    return entities.map((e: TextEntity) => {
+      return this.convertToMdHtml(e);
+    }).join('');
   }
 
   private addFrontMatter(): void {
