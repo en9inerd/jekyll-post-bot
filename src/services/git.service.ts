@@ -1,5 +1,5 @@
 import { injectable } from 'telebuilder/decorators';
-import { GitAuth, clone, add, commit, push, pull } from 'isomorphic-git';
+import { GitAuth, clone, add, commit, push, pull, setConfig, remove } from 'isomorphic-git';
 import http from 'isomorphic-git/http/node/index.js';
 import fs from 'node:fs';
 import { config } from 'telebuilder/config';
@@ -20,6 +20,14 @@ export class GitService {
 
   public async add(filepath: string | string[]) {
     return await add({
+      dir: this.repoDir,
+      filepath,
+      fs,
+    });
+  }
+
+  public async remove(filepath: string) {
+    return await remove({
       dir: this.repoDir,
       filepath,
       fs,
@@ -66,5 +74,30 @@ export class GitService {
       ref: this.branch,
       onAuth: this.auth,
     });
+  }
+
+  public async assignAuthor() {
+    await setConfig({
+      dir: this.repoDir,
+      fs,
+      path: 'user.name',
+      value: config.get<string>('git.author.name'),
+    });
+
+    await setConfig({
+      dir: this.repoDir,
+      fs,
+      path: 'user.email',
+      value: config.get<string>('git.author.email'),
+    });
+  }
+
+  public async repoExists() {
+    try {
+      await fs.promises.access(this.repoDir);
+      return true;
+    } catch (err) {
+      return false;
+    }
   }
 }
