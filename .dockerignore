@@ -17,3 +17,4 @@ CHANGELOG.md
 init-mongo.sh
 jest.config.js
 README.md
+run-docker.sh
