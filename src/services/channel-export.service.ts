@@ -20,12 +20,14 @@ export class ChannelExportService {
   );
   private readonly relPostImagesDir = config.get<string>('git.postImagesDir');
   private readonly relPostsDir = config.get<string>('git.postsDir');
+  private readonly postLayout = config.get<string>('git.postLayout');
   private posts: ChannelPost[] = [];
 
   public setTitle: (content?: string) => string = () => this.channelId;
   public extraContentProcessor?: (content: string) => string;
 
-  public readonly frontMatter = `---\ntitle: "$title"\ndate: $date\nimages: [$images]\n---\n\n`;
+  public readonly frontMatter = (this.postLayout) ? `---\nlayout: ${this.postLayout}\n` : '---\n' +
+    'title: "$title"\ndate: $date\nimages: [$images]\n---\n\n';
 
   @inject(GitService)
   private gitService!: GitService;
@@ -55,8 +57,11 @@ export class ChannelExportService {
   }
 
   private skipMessage(msg: ExportedMessage): boolean {
+    // Skip messages that are not videos, animations, photos, or text.
+    // Also skip service messages, messages with no date, and forwarded messages.
     return (msg?.media_type && !['video_file', 'animation'].includes(msg.media_type)) ||
       msg?.type === 'service' ||
+      !!msg?.forwarded_from ||
       msg?.date_unixtime === '0';
   }
 

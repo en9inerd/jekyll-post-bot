@@ -23,6 +23,7 @@ export type ExportedMessage = {
   photo?: string;
   thumbnail?: string;
   media_type?: string;
+  forwarded_from?: string;
   type: string;
 };
 

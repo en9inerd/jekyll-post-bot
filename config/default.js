@@ -30,5 +30,6 @@ export default {
             email: process.env.GIT_AUTHOR_EMAIL,
         },
         postImagesDir: process.env.GIT_POST_IMAGES_DIR || 'i',
+        postLayout: process.env.GIT_POST_LAYOUT
     }
 };

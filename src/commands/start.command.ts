@@ -142,8 +142,13 @@ export class StartCommand implements Command {
     };
   }
 
-  private skipMessage(msg: Api.Message): boolean {
-    return !(msg.photo || msg.video || msg.gif) && !(msg.text);
+  private skipMessage(msg: Api.Message | Api.MessageService): boolean {
+    // Skip messages that are not videos, animations, photos, or text.
+    // Also skip service messages, messages with no date and forwarded messages.
+    return (msg.media && !(msg.photo || msg.video || msg.gif)) ||
+      msg.className === 'MessageService' ||
+      !!msg.fwdFrom ||
+      msg.date === 0;
   }
 
   private async processMessage(
