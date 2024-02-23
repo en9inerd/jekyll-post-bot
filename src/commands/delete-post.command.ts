@@ -1,7 +1,7 @@
 import { config } from 'telebuilder/config';
 import { command, handler, inject, params } from 'telebuilder/decorators';
 import { Command, CommandParamsSchema, CommandScope, MessageWithParams } from 'telebuilder/types';
-import { ChannelExportService } from '../services/index.js';
+import { PostService } from '../services/index.js';
 import { DeletePostParams } from '../types.js';
 import { NewMessageEvent } from 'telegram/events/index.js';
 
@@ -25,10 +25,8 @@ export class DeletePostCommand implements Command {
     }
   };
 
-  @inject(ChannelExportService)
-  private channelExportService!: ChannelExportService;
-
-  constructor() { }
+  @inject(PostService)
+  private postService!: PostService;
 
   @handler({
     event: {
@@ -42,7 +40,7 @@ export class DeletePostCommand implements Command {
 
     if (!params?.ids) return;
 
-    await this.channelExportService.deletePost(params.ids);
+    await this.postService.deletePost(params.ids);
     await event.client.sendMessage(event.message.senderId, {
       message: `Post(s) with id(s) ${params.ids} deleted successfully!`,
     });

@@ -100,4 +100,9 @@ export class GitService {
       return false;
     }
   }
+
+  public async commitAndPush(message: string): Promise<void> {
+    await this.commit(message);
+    await this.push();
+  }
 }

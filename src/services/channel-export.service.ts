@@ -2,14 +2,14 @@ import { inject, injectable } from 'telebuilder/decorators';
 import { ChannelPost, ExportedMessage, TextEntity } from '../types.js';
 import { config } from 'telebuilder/config';
 import { join as joinPaths } from 'node:path';
-import { readFile, writeFile, mkdir, readdir, access, unlink } from 'node:fs/promises';
-import { GitService } from './git.service.js';
+import { readFile, mkdir, readdir, access } from 'node:fs/promises';
+import { GitService, PostService } from './index.js';
+import { PostHelper } from '../helpers/post.helper.js';
 
 @injectable
 export class ChannelExportService {
-  private readonly dir = config.get<string>('botConfig.exportedDataDir');
-  private readonly jsonFile = joinPaths(this.dir, 'result.json');
-  private readonly channelId = config.get<string>('botConfig.channelId');
+  private readonly exportedDataDir = config.get<string>('botConfig.exportedDataDir');
+  private readonly jsonFile = joinPaths(this.exportedDataDir, 'result.json');
   private readonly postsDir = joinPaths(
     config.get<string>('git.repoDir'),
     config.get<string>('git.postsDir')
@@ -18,21 +18,14 @@ export class ChannelExportService {
     config.get<string>('git.repoDir'),
     config.get<string>('git.postImagesDir')
   );
-  private readonly relPostImagesDir = config.get<string>('git.postImagesDir');
-  private readonly relPostsDir = config.get<string>('git.postsDir');
-  private readonly postLayout = config.get<string>('git.postLayout');
+  // private readonly absPathToConfig = joinPaths(this.repoDir, this.configFileName);
   private posts: ChannelPost[] = [];
-
-  public setTitle: (content?: string) => string = () => this.channelId;
-  public extraContentProcessor?: (content: string) => string;
-
-  public readonly frontMatter = (this.postLayout) ? `---\nlayout: ${this.postLayout}\n` : '---\n' +
-    'title: "$title"\ndate: $date\nimages: [$images]\n---\n\n';
 
   @inject(GitService)
   private gitService!: GitService;
 
-  constructor() { }
+  @inject(PostService)
+  private postService!: PostService;
 
   public async extractPosts(): Promise<void> {
     const data: {
@@ -51,7 +44,7 @@ export class ChannelExportService {
 
         if (media) this.posts[this.posts.length - 1].mediaSource.push(media);
         if (content) this.posts[this.posts.length - 1].content = content;
-        this.posts[this.posts.length - 1].title = this.setTitle(content);
+        this.posts[this.posts.length - 1].title = PostHelper.setTitle(content);
       }
     }
   }
@@ -72,7 +65,7 @@ export class ChannelExportService {
       id: msg.id,
       date: msg.date_unixtime,
       content,
-      title: this.setTitle(content),
+      title: PostHelper.setTitle(content),
       mediaSource: (media ? [media] : []),
       mediaDestination: [],
       relMediaDestination: []
@@ -85,82 +78,12 @@ export class ChannelExportService {
     }).join('');
   }
 
-  public addFrontMatter(post: ChannelPost): void {
-    const images = post.mediaSource.map((m, i) => {
-      const fileName = `${post.id}_${i}.${m.split('.').pop()}`;
-      const dest = joinPaths(this.postImagesDir, fileName);
-      const relDest = joinPaths(this.relPostImagesDir, fileName);
-      post.mediaDestination.push(dest);
-      post.relMediaDestination.push(relDest);
-      return `"${relDest}"`;
-    });
-
-    post.content = this.frontMatter
-      .replace('$title', post.title)
-      .replace('$date', new Date(Number(post.date) * 1000).toISOString().replace('T', ' ').replace(/:\d{2}\.\d{3}Z/, ''))
-      .replace('$images', images.join(', ')) + post.content + '\n';
-  }
-
-  public async savePosts(post: ChannelPost, mediaFiles?: Buffer[]): Promise<void> {
-    const filename = `${post.id}.md`;
-    const filepath = joinPaths(this.postsDir, filename);
-
-    await writeFile(filepath, post.content, 'utf-8');
-    await this.gitService.add(joinPaths(this.relPostsDir, filename));
-
-    post.mediaSource.map(async (imagePath, i) => {
-      const sourceImagePath = joinPaths(this.dir, imagePath);
-      const destImageFilePath = post.mediaDestination[i];
-      const relDestImageFilePath = post.relMediaDestination[i];
-
-      await writeFile(
-        destImageFilePath,
-        (mediaFiles) ? mediaFiles[i] : await readFile(sourceImagePath, 'binary'),
-        'binary'
-      );
-      await this.gitService.add(relDestImageFilePath);
-    });
-  }
-
-  public async editPost(post: ChannelPost, mediaFile?: Buffer): Promise<void> {
-    const postId = post.id;
-    const editablePostId = await this.getEditablePostId(post);
-    const index = postId - editablePostId;
-    const num = (await this.getPostImagePaths(editablePostId))?.length;
-
-    if (post.content) {
-      post.id = editablePostId;
-      if (num > 0) post.mediaSource = Array(num).fill(post.mediaSource[0]);
-
-      this.addFrontMatter(post);
-      if (this.extraContentProcessor) {
-        post.content = this.extraContentProcessor(post.content);
-      }
-
-      const filename = `${editablePostId}.md`;
-      const filepath = joinPaths(this.postsDir, filename);
-
-      await writeFile(filepath, post.content, 'utf-8');
-      await this.gitService.add(joinPaths(this.relPostsDir, filename));
-    }
-
-    if (mediaFile) {
-      const filename = `${editablePostId}_${index}.${post.mediaSource[0].split('.').pop()}`;
-      const destImageFilePath = joinPaths(this.postImagesDir, filename);
-      const relDestImageFilePath = joinPaths(this.relPostImagesDir, filename);
-
-      await writeFile(destImageFilePath, mediaFile, 'binary');
-      await this.gitService.add(relDestImageFilePath);
-    }
-  }
-
   public async start(): Promise<void> {
     if (await this.gitService.repoExists()) {
       await this.gitService.pull();
 
       try {
-        const files = await readdir(this.postsDir);
-        if (files.length > 0) return;
+        if ((await readdir(this.postsDir)).length > 0) return;
       } catch (err) {
         // ignore
       }
@@ -170,7 +93,7 @@ export class ChannelExportService {
     }
 
     try {
-      await access(this.dir);
+      await access(this.exportedDataDir);
     } catch (err) {
       return;
     }
@@ -188,57 +111,11 @@ export class ChannelExportService {
     }
 
     for (const post of this.posts) {
-      this.addFrontMatter(post);
-      if (this.extraContentProcessor) {
-        post.content = this.extraContentProcessor(post.content);
-      }
-      await this.savePosts(post);
+      await this.postService.savePosts(post);
     }
-    await this.commitAndPush('Add initial posts');
+    await this.gitService.commitAndPush('Add initial posts');
 
     this.posts = [];
-  }
-
-  private async getEditablePostId(post: ChannelPost): Promise<number> {
-    const postFiles: number[] = (await readdir(this.postsDir)).map((file) => {
-      const fileIdString = file.split('.')[0];
-      return parseInt(fileIdString, 10);
-    });
-
-    return postFiles.reduce((prev, curr) => {
-      const prevDifference = Math.abs(curr - post.id);
-      const currDifference = Math.abs(prev - post.id);
-      return prevDifference < currDifference ? curr : prev;
-    });
-  }
-
-  public async getPostImagePaths(postId: number | string): Promise<string[]> {
-    const postImages = await readdir(this.postImagesDir);
-    return postImages.filter((image) => image.startsWith(`${postId}_`));
-  }
-
-  public async deletePost(ids: string): Promise<void> {
-    for (const id of ids.split(',')) {
-      const imagePaths = await this.getPostImagePaths(id);
-
-      try {
-        await unlink(joinPaths(this.postsDir, `${id}.md`));
-        await this.gitService.remove(joinPaths(this.relPostsDir, `${id}.md`));
-        await Promise.all(imagePaths.map((imagePath) => unlink(joinPaths(this.postImagesDir, imagePath))));
-        await Promise.all(imagePaths.map((imagePath) => this.gitService.remove(joinPaths(this.relPostImagesDir, imagePath))));
-      } catch (err) {
-        if ((<NodeJS.ErrnoException>err).code !== 'ENOENT') {
-          throw err;
-        }
-      }
-    }
-
-    this.commitAndPush(`Delete post(s): ${ids}`);
-  }
-
-  public async commitAndPush(message: string): Promise<void> {
-    await this.gitService.commit(message);
-    await this.gitService.push();
   }
 
   private convertToHtml(entity: TextEntity): string {
