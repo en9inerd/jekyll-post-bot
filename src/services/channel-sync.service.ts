@@ -24,21 +24,21 @@ export class ChannelSyncService {
   @client
   private client!: TelegramClient;
 
-  public async syncChannelInfo(params: {
+  public async syncChannelInfo(syncFlags: {
     logo?: boolean,
     numOfSubscribers?: boolean,
     numOfPosts?: boolean
   }) {
     let configFile: string | undefined;
 
-    if ((params.logo || params.numOfSubscribers)) {
+    if ((syncFlags.logo || syncFlags.numOfSubscribers)) {
       const channelInfo = <Api.ChannelFull>(await this.client.invoke(
         new Api.channels.GetFullChannel({
           channel: channelId,
         })
       )).fullChat;
 
-      if (!channelInfo.chatPhoto.id.isZero() && params.logo) {
+      if (!channelInfo.chatPhoto.id.isZero() && syncFlags.logo) {
         const logoFile = <Buffer>await this.client.downloadProfilePhoto(channelInfo.id);
         const imageExt = getImageFormat(logoFile);
         const logo = `assets/logo.${imageExt}`;
@@ -46,13 +46,13 @@ export class ChannelSyncService {
         await this.gitService.add(logo);
       }
 
-      if (params.numOfSubscribers) {
+      if (syncFlags.numOfSubscribers) {
         configFile = await readFile(this.absPathToConfig, 'utf-8');
         configFile = configFile.replace(/num_of_subscribers: \d+/, `num_of_subscribers: ${channelInfo.participantsCount}`);
       }
     }
 
-    if (params.numOfPosts) {
+    if (syncFlags.numOfPosts) {
       if (!configFile) configFile = await readFile(this.absPathToConfig, 'utf-8');
       const numberOfPosts = (await readdir(this.postsDir)).length;
       configFile = configFile.replace(/num_of_posts: \d+/, `num_of_posts: ${numberOfPosts}`);
