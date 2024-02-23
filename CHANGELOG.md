@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/en9inerd/jekyll-post-bot/compare/v1.0.0...v1.0.1) (2024-02-23)
+
+
+### Bug Fixes
+
+* skip forwarded messages ([d2a05f2](https://github.com/en9inerd/jekyll-post-bot/commit/d2a05f20abbfb11781ab2034d74eed98ef0bb68a))
+
 # 1.0.0 (2024-02-22)
 
 
