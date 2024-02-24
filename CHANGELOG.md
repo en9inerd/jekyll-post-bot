@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/en9inerd/jekyll-post-bot/compare/v1.0.3...v1.0.4) (2024-02-24)
+
+
+### Bug Fixes
+
+* improved error handling and message filter logic ([95b1704](https://github.com/en9inerd/jekyll-post-bot/commit/95b170487c242316a1bf9601224626948b75c8f2))
+
 ## [1.0.3](https://github.com/en9inerd/jekyll-post-bot/compare/v1.0.2...v1.0.3) (2024-02-24)
 
 
