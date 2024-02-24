@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/en9inerd/jekyll-post-bot/compare/v1.0.2...v1.0.3) (2024-02-24)
+
+
+### Bug Fixes
+
+* `index.ts` messes declaration order - current version of DI is sensitive to this ([b72220e](https://github.com/en9inerd/jekyll-post-bot/commit/b72220ea701acdb952c6e94aac36171ffdf09a95))
+
 ## [1.0.2](https://github.com/en9inerd/jekyll-post-bot/compare/v1.0.1...v1.0.2) (2024-02-23)
 
 

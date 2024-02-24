@@ -1,6 +1,6 @@
 {
   "name": "jekyll-post-bot",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Bot to post telegram channel messages on website based on Jekyll.",
   "type": "module",
   "private": true,
