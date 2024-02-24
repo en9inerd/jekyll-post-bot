@@ -1,6 +1,6 @@
 import { NewMessageEvent } from 'telegram/events';
 import type { Command, CommandScope } from 'telebuilder/types';
-import { command, handler, inject } from 'telebuilder/decorators';
+import { catchError, command, handler, inject } from 'telebuilder/decorators';
 import { eventManager } from 'telebuilder/event-manager';
 import { TelegramClient } from 'telegram';
 import { config } from 'telebuilder/config';
@@ -74,6 +74,7 @@ export class StartCommand implements Command {
     validateCommandParams: false,
     lock: false
   })
+  @catchError()
   public async getNewAlbum(event: AlbumEvent): Promise<void> {
     // prevent edited messages from being processed
     if (event.messages.length === 1 || !event?.client) return;
@@ -92,6 +93,7 @@ export class StartCommand implements Command {
     validateCommandParams: false,
     lock: false
   })
+  @catchError()
   public async getNewMessage(event: NewMessageEvent): Promise<void> {
     if (!event.client) return;
     await this.postService.processMessage(event.client, [event.message]);
@@ -107,6 +109,7 @@ export class StartCommand implements Command {
     validateCommandParams: false,
     lock: false
   })
+  @catchError()
   public async getEditedMessage(event: EditedMessageEvent): Promise<void> {
     if (!event.client) return;
     await this.postService.processMessage(event.client, [event.message], true);

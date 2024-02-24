@@ -9,17 +9,17 @@ import { PostService } from './post.service.js';
 
 @injectable
 export class ChannelExportService {
+  private readonly repoDir = config.get<string>("git.repoDir");
   private readonly exportedDataDir = config.get<string>('botConfig.exportedDataDir');
   private readonly jsonFile = joinPaths(this.exportedDataDir, 'result.json');
   private readonly postsDir = joinPaths(
-    config.get<string>('git.repoDir'),
+    this.repoDir,
     config.get<string>('git.postsDir')
   );
   private readonly postImagesDir = joinPaths(
-    config.get<string>('git.repoDir'),
+    this.repoDir,
     config.get<string>('git.postImagesDir')
   );
-  // private readonly absPathToConfig = joinPaths(this.repoDir, this.configFileName);
   private posts: ChannelPost[] = [];
 
   @inject(GitService)
@@ -84,7 +84,7 @@ export class ChannelExportService {
       await this.gitService.pull();
 
       try {
-        if ((await readdir(this.postsDir)).length > 0) return;
+        if ((await readdir(this.postsDir).catch(() => [])).length > 0) return;
       } catch (err) {
         // ignore
       }

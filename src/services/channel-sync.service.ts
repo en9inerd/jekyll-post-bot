@@ -1,10 +1,10 @@
-import { client, inject, injectable } from "telebuilder/decorators";
-import { getImageFormat } from "telebuilder/utils";
-import { Api, TelegramClient } from "telegram";
-import { GitService } from "./git.service.js";
-import { readFile, writeFile, readdir } from "fs/promises";
-import { join as joinPaths } from "path";
-import { config } from "telebuilder/config";
+import { client, inject, injectable } from 'telebuilder/decorators';
+import { getImageFormat } from 'telebuilder/utils';
+import { Api, TelegramClient } from 'telegram';
+import { GitService } from './git.service.js';
+import { readFile, writeFile, readdir } from 'fs/promises';
+import { join as joinPaths } from 'path';
+import { config } from 'telebuilder/config';
 
 const channelId = config.get<string>('botConfig.channelId');
 
@@ -54,7 +54,7 @@ export class ChannelSyncService {
 
     if (syncFlags.numOfPosts) {
       if (!configFile) configFile = await readFile(this.absPathToConfig, 'utf-8');
-      const numberOfPosts = (await readdir(this.postsDir)).length;
+      const numberOfPosts = (await readdir(this.postsDir).catch(() => [])).length;
       configFile = configFile.replace(/num_of_posts: \d+/, `num_of_posts: ${numberOfPosts}`);
     }
 

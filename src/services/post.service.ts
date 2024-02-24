@@ -45,6 +45,7 @@ export class PostService {
       post.content = PostHelper.extraContentProcessor(post.content);
     }
 
+    await PostHelper.checkAndCreateDirectory(this.postsDir);
     await writeFile(filepath, post.content, 'utf-8');
     await this.gitService.add(joinPaths(this.relPostsDir, filename));
 
@@ -53,6 +54,7 @@ export class PostService {
       const destImageFilePath = post.mediaDestination[i];
       const relDestImageFilePath = post.relMediaDestination[i];
 
+      await PostHelper.checkAndCreateDirectory(this.postImagesDir);
       await writeFile(
         destImageFilePath,
         (mediaFiles) ? mediaFiles[i] : await readFile(sourceImagePath, 'binary'),
@@ -94,6 +96,7 @@ export class PostService {
       const destImageFilePath = joinPaths(this.postImagesDir, filename);
       const relDestImageFilePath = joinPaths(this.relPostImagesDir, filename);
 
+      await PostHelper.checkAndCreateDirectory(this.postImagesDir);
       await writeFile(destImageFilePath, mediaFile, 'binary');
       await this.gitService.add(relDestImageFilePath);
     }
@@ -155,7 +158,7 @@ export class PostService {
   private skipMessage(msg: Api.Message | Api.MessageService): boolean {
     // Skip messages that are not videos, animations, photos, or text.
     // Also skip service messages, messages with no date and forwarded messages.
-    return (msg.media && !(msg.photo || msg.video || msg.gif)) ||
+    return !(msg.photo || msg.video || msg.gif || msg.text) ||
       msg.className === 'MessageService' ||
       !!msg.fwdFrom ||
       msg.date === 0;
@@ -180,7 +183,7 @@ export class PostService {
         }
       }
 
-      if (msg.media) {
+      if (msg.photo || msg.video || msg.gif) {
         let thumb;
         if (msg.photo) thumb = 1;
         else if (msg.video) thumb = 0;
@@ -194,6 +197,8 @@ export class PostService {
         post.mediaSource.push(mediaPath);
       }
     }
+
+    if (Object.keys(post).length === 0) return;
 
     if (edit) {
       await this.editPost(

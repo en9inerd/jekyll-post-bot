@@ -5,6 +5,7 @@ import { NewMessageEvent } from 'telegram/events/index.js';
 import { SyncChannelInfoParams } from '../types.js';
 import { GitService } from '../services/git.service.js';
 import { ChannelSyncService } from '../services/channel-sync.service.js';
+import { formatErrorMessage } from 'telebuilder/utils';
 
 const channelAuthor = config.get<string>('botConfig.channelAuthor');
 
@@ -53,13 +54,21 @@ export class SyncChannelInfoCommand implements Command {
       return;
     }
 
-    await this.channelSyncService.syncChannelInfo({
-      logo: params.logo,
-      numOfPosts: params.stat,
-      numOfSubscribers: params.stat,
-    });
+    try {
+      await this.channelSyncService.syncChannelInfo({
+        logo: params.logo,
+        numOfPosts: params.stat,
+        numOfSubscribers: params.stat,
+      });
 
-    await this.gitService.commitAndPush('Update channel info');
+      await this.gitService.commitAndPush('Update channel info');
+    } catch (e) {
+      await event.client.sendMessage(event.message.senderId, {
+        message: `Error syncing channel info: ${formatErrorMessage(<Error>e)}`,
+      });
+
+      return;
+    }
 
     await event.client.sendMessage(event.message.senderId, {
       message: 'Channel info updated successfully!',

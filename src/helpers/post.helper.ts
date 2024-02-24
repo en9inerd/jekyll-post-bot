@@ -1,7 +1,8 @@
 import { config } from "telebuilder/config";
 import { ChannelPost } from "../types.js";
 import { join as joinPaths } from "node:path";
-import { readdir } from "node:fs/promises";
+import { readdir, access, mkdir, constants } from "node:fs/promises";
+import { HelperException } from "telebuilder/exceptions";
 
 export class PostHelper {
   static readonly repoDir = config.get<string>("git.repoDir");
@@ -9,8 +10,11 @@ export class PostHelper {
     this.repoDir,
     config.get<string>("git.postsDir")
   );
+  static readonly postImagesDir = joinPaths(
+    this.repoDir,
+    config.get<string>("git.postImagesDir")
+  );
   static readonly postLayout = config.get<string>('git.postLayout');
-  static readonly postImagesDir = config.get<string>('git.postImagesDir');
   static readonly relPostImagesDir = config.get<string>('git.postImagesDir');
   static readonly channelId = config.get<string>('botConfig.channelId');
 
@@ -50,7 +54,20 @@ export class PostHelper {
   }
 
   static async getPostImagePaths(postId: number | string): Promise<string[]> {
-    const postImages = await readdir(this.postImagesDir);
+    const postImages = await readdir(this.postImagesDir).catch(() => []);
     return postImages.filter((image) => image.startsWith(`${postId}_`));
+  }
+
+  static async checkAndCreateDirectory(dir: string): Promise<void> {
+    try {
+      await access(dir, constants.F_OK);
+    } catch (error) {
+      try {
+        await mkdir(dir, { recursive: true });
+      } catch (mkdirError) {
+        // we can't continue without the directory
+        throw new HelperException(`Error creating directory: ${(<Error>mkdirError).message}`);
+      }
+    }
   }
 }

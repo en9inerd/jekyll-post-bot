@@ -4,8 +4,10 @@ import { Command, CommandParamsSchema, CommandScope, MessageWithParams } from 't
 import { DeletePostParams } from '../types.js';
 import { NewMessageEvent } from 'telegram/events/index.js';
 import { PostService } from '../services/post.service.js';
+import { formatErrorMessage } from 'telebuilder/utils';
 
 const channelAuthor = config.get<string>('botConfig.channelAuthor');
+const channelId = config.get<string>('botConfig.channelId');
 
 @command
 export class DeletePostCommand implements Command {
@@ -40,7 +42,17 @@ export class DeletePostCommand implements Command {
 
     if (!params?.ids) return;
 
-    await this.postService.deletePost(params.ids);
+    try {
+      await this.postService.deletePost(params.ids);
+      const messageIds = params.ids.split(',').map(id => parseInt(id));
+      await event.client.deleteMessages(channelId, messageIds, { revoke: true });
+    } catch (e) {
+      await event.client.sendMessage(event.message.senderId, {
+        message: `Error deleting post(s) with id(s) ${params.ids}: ${formatErrorMessage(<Error>e)}`,
+      });
+
+      return;
+    }
     await event.client.sendMessage(event.message.senderId, {
       message: `Post(s) with id(s) ${params.ids} deleted successfully!`,
     });
