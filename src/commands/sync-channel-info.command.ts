@@ -3,7 +3,8 @@ import { command, handler, inject, params } from 'telebuilder/decorators';
 import { Command, CommandParamsSchema, CommandScope, MessageWithParams } from 'telebuilder/types';
 import { NewMessageEvent } from 'telegram/events/index.js';
 import { SyncChannelInfoParams } from '../types.js';
-import { ChannelSyncService, GitService } from '../services/index.js';
+import { GitService } from '../services/git.service.js';
+import { ChannelSyncService } from '../services/channel-sync.service.js';
 
 const channelAuthor = config.get<string>('botConfig.channelAuthor');
 

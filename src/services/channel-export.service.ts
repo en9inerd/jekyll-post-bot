@@ -3,8 +3,9 @@ import { ChannelPost, ExportedMessage, TextEntity } from '../types.js';
 import { config } from 'telebuilder/config';
 import { join as joinPaths } from 'node:path';
 import { readFile, mkdir, readdir, access } from 'node:fs/promises';
-import { GitService, PostService } from './index.js';
 import { PostHelper } from '../helpers/post.helper.js';
+import { GitService } from './git.service.js';
+import { PostService } from './post.service.js';
 
 @injectable
 export class ChannelExportService {

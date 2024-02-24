@@ -1,9 +1,9 @@
 import { config } from 'telebuilder/config';
 import { command, handler, inject, params } from 'telebuilder/decorators';
 import { Command, CommandParamsSchema, CommandScope, MessageWithParams } from 'telebuilder/types';
-import { PostService } from '../services/index.js';
 import { DeletePostParams } from '../types.js';
 import { NewMessageEvent } from 'telegram/events/index.js';
+import { PostService } from '../services/post.service.js';
 
 const channelAuthor = config.get<string>('botConfig.channelAuthor');
 

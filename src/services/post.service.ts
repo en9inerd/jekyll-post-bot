@@ -2,11 +2,12 @@ import { injectable, inject } from "telebuilder/decorators";
 import { ChannelPost } from "../types.js";
 import { join as joinPaths } from "node:path";
 import { writeFile, readFile, unlink } from "node:fs/promises";
-import { ChannelSyncService, GitService } from "./index.js";
 import { config } from "telebuilder/config";
 import { PostHelper } from '../helpers/post.helper.js';
 import { Api, TelegramClient } from "telegram";
 import { getImageFormat } from "telebuilder/utils";
+import { GitService } from "./git.service.js";
+import { ChannelSyncService } from "./channel-sync.service.js";
 
 @injectable
 export class PostService {

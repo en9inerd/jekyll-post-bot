@@ -5,9 +5,10 @@ import { eventManager } from 'telebuilder/event-manager';
 import { TelegramClient } from 'telegram';
 import { config } from 'telebuilder/config';
 import { AlbumEvent } from 'telegram/events/Album.js';
-import { ChannelExportService, PostService } from '../services/index.js';
 import { EditedMessageEvent } from 'telegram/events/EditedMessage.js';
 import { PostHelper } from '../helpers/post.helper.js';
+import { ChannelExportService } from '../services/channel-export.service.js';
+import { PostService } from '../services/post.service.js';
 
 const channelId = config.get<string>('botConfig.channelId');
 const channelAuthor = config.get<string>('botConfig.channelAuthor');
