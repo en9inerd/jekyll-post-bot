@@ -1,4 +1,4 @@
-import { inject, injectable } from 'telebuilder/decorators';
+import { client, inject, injectable } from 'telebuilder/decorators';
 import { ChannelPost, ExportedMessage, TextEntity } from '../types.js';
 import { config } from 'telebuilder/config';
 import { join as joinPaths } from 'node:path';
@@ -6,12 +6,17 @@ import { readFile, mkdir, readdir, access } from 'node:fs/promises';
 import { PostHelper } from '../helpers/post.helper.js';
 import { GitService } from './git.service.js';
 import { PostService } from './post.service.js';
+import { Api, TelegramClient } from 'telegram';
 
 @injectable
 export class ChannelExportService {
+  private readonly channelId = config.get<string>('botConfig.channelId');
+  private readonly offlineMedia = config.get<boolean>('botConfig.offlineMedia', false);
   private readonly repoDir = config.get<string>("git.repoDir");
-  private readonly exportedDataDir = config.get<string>('botConfig.exportedDataDir');
-  private readonly jsonFile = joinPaths(this.exportedDataDir, 'result.json');
+  private readonly jsonFile = joinPaths(
+    config.get<string>('botConfig.exportedDataDir'),
+    'result.json'
+  );
   private readonly postsDir = joinPaths(
     this.repoDir,
     config.get<string>('git.postsDir')
@@ -21,6 +26,9 @@ export class ChannelExportService {
     config.get<string>('git.postImagesDir')
   );
   private posts: ChannelPost[] = [];
+
+  @client
+  private client!: TelegramClient;
 
   @inject(GitService)
   private gitService!: GitService;
@@ -33,19 +41,44 @@ export class ChannelExportService {
       messages: ExportedMessage[];
     } = JSON.parse(await readFile(this.jsonFile, 'utf-8'));
 
-    for (const [i, msg] of data.messages.entries()) {
-      if (this.skipMessage(msg)) continue;
+    // If offlineMedia is true, take media from the exported data directory.
+    // Otherwise, download media from the channel.
+    if (this.offlineMedia) {
+      for (const [i, msg] of data.messages.entries()) {
+        if (this.skipMessage(msg)) continue;
 
-      if (msg.date_unixtime !== data.messages[i - 1]?.date_unixtime) {
-        const post = this.createNewPost(msg);
-        this.posts.push(post);
-      } else {
-        const media = msg?.photo || msg?.thumbnail;
-        const content = this.buildContent(msg.text_entities);
+        if (msg.date_unixtime !== data.messages[i - 1]?.date_unixtime) {
+          const post = this.createNewPost(msg);
+          this.posts.push(post);
+        } else {
+          const media = msg?.photo || msg?.thumbnail;
+          const content = this.buildContent(msg.text_entities);
 
-        if (media) this.posts[this.posts.length - 1].mediaSource.push(media);
-        if (content) this.posts[this.posts.length - 1].content = content;
-        this.posts[this.posts.length - 1].title = PostHelper.setTitle(content);
+          if (media) this.posts[this.posts.length - 1].mediaSource.push(media);
+          if (content) this.posts[this.posts.length - 1].content = content;
+          this.posts[this.posts.length - 1].title = PostHelper.setTitle(content);
+        }
+      }
+    } else {
+      const messageIds = data.messages.filter((msg) => !this.skipMessage(msg)).map((msg) => msg.id);
+      const groupedMessages: Api.Message[][] = [];
+      for await (const msg of this.client.iterMessages(this.channelId, { ids: messageIds })) {
+        if (msg.groupedId) {
+          const index = groupedMessages.findIndex(
+            (group) => group[0].groupedId?.eq(<bigInt.BigInteger>msg.groupedId)
+          );
+          if (index === -1) {
+            groupedMessages.push([msg]);
+          } else {
+            groupedMessages[index].push(msg);
+          }
+        } else {
+          groupedMessages.push([msg]);
+        }
+      }
+
+      for (const messages of groupedMessages) {
+        await this.postService.processMessage(this.client, messages, false, false);
       }
     }
   }
@@ -94,7 +127,7 @@ export class ChannelExportService {
     }
 
     try {
-      await access(this.exportedDataDir);
+      await access(this.jsonFile);
     } catch (err) {
       return;
     }

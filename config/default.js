@@ -17,6 +17,7 @@ export default {
 
         channelId: process.env.TG_BOT_CHANNEL_ID,
         channelAuthor: process.env.TG_BOT_CHANNEL_AUTHOR,
+        offlineMedia: process.env.TG_BOT_OFFLINE_MEDIA?.toLowerCase() === 'true',
         exportedDataDir: process.env.TG_BOT_EXPORTED_DATA_DIR || 'undefined', // absolute path or relative to the project root
     },
     git: {
