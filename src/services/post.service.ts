@@ -141,6 +141,14 @@ export class PostService {
   }
 
   private buildContent(text: string): string {
+    // escape all < and > characters between <code> and </code> tags
+    text = text.replace(/<code>([\s\S]*?)<\/code>/g, (match, codeContent) => {
+      const escapedCodeContent = codeContent.replace(/[<>]/g, (char: string) => {
+        return char === '<' ? '&lt;' : '&gt;';
+      });
+      return `<code>${escapedCodeContent}</code>`;
+    });
+
     const sections = text.split(/(<pre>.*?<\/pre>|<blockquote>.*?<\/blockquote>)/s);
     const modifiedSections = sections.map(section => {
       if (section.startsWith('<pre>') || section.startsWith('<blockquote>')) {
@@ -167,7 +175,8 @@ export class PostService {
   public async processMessage(
     client: TelegramClient,
     messages: Api.Message[],
-    edit?: boolean
+    edit = false,
+    commitAndPush = true
   ): Promise<void> {
     let post = <ChannelPost>{};
     const mediaFiles = [];
@@ -209,6 +218,9 @@ export class PostService {
     else {
       await this.savePosts(post, mediaFiles);
     }
-    await this.gitService.commitAndPush(`${(edit ? 'Edited' : 'Created new')} post: ${post.id}`);
+
+    if (commitAndPush) {
+      await this.gitService.commitAndPush(`${(edit ? 'Edited' : 'Created new')} post: ${post.id}`);
+    }
   }
 }
