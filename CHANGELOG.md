@@ -1,3 +1,11 @@
+## [1.0.5](https://github.com/en9inerd/jekyll-post-bot/compare/v1.0.4...v1.0.5) (2024-02-27)
+
+
+### Bug Fixes
+
+* escape < and > between <code> and </code> ([95f43e1](https://github.com/en9inerd/jekyll-post-bot/commit/95f43e1236241878eb384cdd948d26bba93d6e5f))
+* improve initial post export ([0c5be62](https://github.com/en9inerd/jekyll-post-bot/commit/0c5be62422dbdc129bc152d1a25f0777c08a6e8b))
+
 ## [1.0.4](https://github.com/en9inerd/jekyll-post-bot/compare/v1.0.3...v1.0.4) (2024-02-24)
 
 
