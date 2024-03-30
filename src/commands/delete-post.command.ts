@@ -24,7 +24,11 @@ export class DeletePostCommand implements Command {
     ids: {
       type: 'string',
       required: true,
-    }
+    },
+    revoke: {
+      type: 'boolean',
+      required: false,
+    },
   };
 
   @inject(PostService)
@@ -44,8 +48,11 @@ export class DeletePostCommand implements Command {
 
     try {
       await this.postService.deletePost(params.ids);
-      const messageIds = params.ids.split(',').map(id => parseInt(id));
-      await event.client.deleteMessages(channelId, messageIds, { revoke: true });
+
+      if (params.revoke) {
+        const messageIds = params.ids.split(',').map(id => parseInt(id));
+        await event.client.deleteMessages(channelId, messageIds, { revoke: true });
+      }
     } catch (e) {
       await event.client.sendMessage(event.message.senderId, {
         message: `Error deleting post(s) with id(s) ${params.ids}: ${formatErrorMessage(<Error>e)}`,

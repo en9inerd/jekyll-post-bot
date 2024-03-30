@@ -29,6 +29,7 @@ export type ExportedMessage = {
 
 export type DeletePostParams = {
   ids: string;
+  revoke?: boolean;
 };
 
 export type SyncChannelInfoParams = {
