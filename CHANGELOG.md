@@ -1,3 +1,10 @@
+## [1.0.6](https://github.com/en9inerd/jekyll-post-bot/compare/v1.0.5...v1.0.6) (2024-03-30)
+
+
+### Bug Fixes
+
+* add `revoke` param for `delete_post` command ([4d688aa](https://github.com/en9inerd/jekyll-post-bot/commit/4d688aa89eae5dd155b6f5b7fcf691c10e549ab0))
+
 ## [1.0.5](https://github.com/en9inerd/jekyll-post-bot/compare/v1.0.4...v1.0.5) (2024-02-27)
 
 
