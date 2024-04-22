@@ -1,3 +1,10 @@
+## [1.0.7](https://github.com/en9inerd/jekyll-post-bot/compare/v1.0.6...v1.0.7) (2024-04-22)
+
+
+### Bug Fixes
+
+* update dependencies ([efa9074](https://github.com/en9inerd/jekyll-post-bot/commit/efa9074925265fff4e14d6adc47d08f688fd5846))
+
 ## [1.0.6](https://github.com/en9inerd/jekyll-post-bot/compare/v1.0.5...v1.0.6) (2024-03-30)
 
 
