@@ -1,3 +1,10 @@
+## [1.0.8](https://github.com/en9inerd/jekyll-post-bot/compare/v1.0.7...v1.0.8) (2024-04-26)
+
+
+### Bug Fixes
+
+* use biome for linting ([86a0a7c](https://github.com/en9inerd/jekyll-post-bot/commit/86a0a7c3e9f1ef6071fdfd0ad69bd2aa92d346af))
+
 ## [1.0.7](https://github.com/en9inerd/jekyll-post-bot/compare/v1.0.6...v1.0.7) (2024-04-22)
 
 
