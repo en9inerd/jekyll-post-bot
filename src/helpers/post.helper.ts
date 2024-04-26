@@ -1,30 +1,30 @@
-import { config } from "telebuilder/config";
-import { ChannelPost } from "../types.js";
+import { constants, access, mkdir, readdir } from "node:fs/promises";
 import { join as joinPaths } from "node:path";
-import { readdir, access, mkdir, constants } from "node:fs/promises";
+import { config } from "telebuilder/config";
 import { HelperException } from "telebuilder/exceptions";
+import type { ChannelPost } from "../types.js";
 
-export class PostHelper {
-  static readonly repoDir = config.get<string>("git.repoDir");
-  static readonly postsDir = joinPaths(
+class PostHelper {
+  private readonly repoDir = config.get<string>("git.repoDir");
+  private readonly postsDir = joinPaths(
     this.repoDir,
     config.get<string>("git.postsDir")
   );
-  static readonly postImagesDir = joinPaths(
+  private readonly postImagesDir = joinPaths(
     this.repoDir,
     config.get<string>("git.postImagesDir")
   );
-  static readonly postLayout = config.get<string>('git.postLayout');
-  static readonly relPostImagesDir = config.get<string>('git.postImagesDir');
-  static readonly channelId = config.get<string>('botConfig.channelId');
+  private readonly postLayout = config.get<string>('git.postLayout');
+  private readonly relPostImagesDir = config.get<string>('git.postImagesDir');
+  private readonly channelId = config.get<string>('botConfig.channelId');
 
-  static readonly frontMatter = (this.postLayout) ? `---\nlayout: ${this.postLayout}\n` : '---\n' +
+  private readonly frontMatter = (this.postLayout) ? `---\nlayout: ${this.postLayout}\n` : '---\n' +
     'title: "$title"\ndate: $date\nimages: [$images]\n---\n\n';
 
-  static setTitle: (content?: string) => string = () => this.channelId;
-  static extraContentProcessor?: (content: string) => string;
+  setTitle: (content?: string) => string = () => this.channelId;
+  extraContentProcessor?: (content: string) => string;
 
-  static addFrontMatter(post: ChannelPost): void {
+  addFrontMatter(post: ChannelPost): void {
     const images = post.mediaSource.map((m, i) => {
       const fileName = `${post.id}_${i}.${m.split('.').pop()}`;
       const dest = joinPaths(this.postImagesDir, fileName);
@@ -34,16 +34,16 @@ export class PostHelper {
       return `"${relDest}"`;
     });
 
-    post.content = this.frontMatter
+    post.content = `${this.frontMatter
       .replace('$title', post.title)
       .replace('$date', new Date(Number(post.date) * 1000).toISOString().replace('T', ' ').replace(/:\d{2}\.\d{3}Z/, ''))
-      .replace('$images', images.join(', ')) + post.content + '\n';
+      .replace('$images', images.join(', ')) + post.content}\n`;
   }
 
-  static async getEditablePostId(post: ChannelPost): Promise<number> {
+  async getEditablePostId(post: ChannelPost): Promise<number> {
     const postFiles: number[] = (await readdir(this.postsDir)).map((file) => {
       const fileIdString = file.split('.')[0];
-      return parseInt(fileIdString, 10);
+      return Number.parseInt(fileIdString, 10);
     });
 
     return postFiles.reduce((prev, curr) => {
@@ -53,12 +53,12 @@ export class PostHelper {
     });
   }
 
-  static async getPostImagePaths(postId: number | string): Promise<string[]> {
+  async getPostImagePaths(postId: number | string): Promise<string[]> {
     const postImages = await readdir(this.postImagesDir).catch(() => []);
     return postImages.filter((image) => image.startsWith(`${postId}_`));
   }
 
-  static async checkAndCreateDirectory(dir: string): Promise<void> {
+  async checkAndCreateDirectory(dir: string): Promise<void> {
     try {
       await access(dir, constants.F_OK);
     } catch (error) {
@@ -71,3 +71,5 @@ export class PostHelper {
     }
   }
 }
+
+export default new PostHelper;

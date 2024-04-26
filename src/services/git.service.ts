@@ -1,5 +1,5 @@
 import { injectable } from 'telebuilder/decorators';
-import { GitAuth, clone, add, commit, push, pull, setConfig, remove } from 'isomorphic-git';
+import { type GitAuth, clone, add, commit, push, pull, setConfig, remove } from 'isomorphic-git';
 import http from 'isomorphic-git/http/node/index.js';
 import fs from 'node:fs';
 import { config } from 'telebuilder/config';

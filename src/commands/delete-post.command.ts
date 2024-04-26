@@ -1,10 +1,10 @@
 import { config } from 'telebuilder/config';
 import { command, handler, inject, params } from 'telebuilder/decorators';
-import { Command, CommandParamsSchema, CommandScope, MessageWithParams } from 'telebuilder/types';
-import { DeletePostParams } from '../types.js';
-import { NewMessageEvent } from 'telegram/events/index.js';
-import { PostService } from '../services/post.service.js';
+import type { Command, CommandParamsSchema, CommandScope, MessageWithParams } from 'telebuilder/types';
 import { formatErrorMessage } from 'telebuilder/utils';
+import type { NewMessageEvent } from 'telegram/events/index.js';
+import { PostService } from '../services/post.service.js';
+import type { DeletePostParams } from '../types.js';
 
 const channelAuthor = config.get<string>('botConfig.channelAuthor');
 const channelId = config.get<string>('botConfig.channelId');
@@ -50,7 +50,7 @@ export class DeletePostCommand implements Command {
       await this.postService.deletePost(params.ids);
 
       if (params.revoke) {
-        const messageIds = params.ids.split(',').map(id => parseInt(id));
+        const messageIds = params.ids.split(',').map(id => Number.parseInt(id));
         await event.client.deleteMessages(channelId, messageIds, { revoke: true });
       }
     } catch (e) {

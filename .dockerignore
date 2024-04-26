@@ -10,8 +10,7 @@ botInfo
 .husky
 .github
 .commitlintrc.js
-.eslintrc.json
-.eslintignore
+biome.json
 .releaserc.json
 CHANGELOG.md
 init-mongo.sh

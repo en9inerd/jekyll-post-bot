@@ -1,12 +1,12 @@
-import { NewMessageEvent } from 'telegram/events';
-import type { Command, CommandScope } from 'telebuilder/types';
+import { config } from 'telebuilder/config';
 import { catchError, command, handler, inject } from 'telebuilder/decorators';
 import { eventManager } from 'telebuilder/event-manager';
-import { TelegramClient } from 'telegram';
-import { config } from 'telebuilder/config';
-import { AlbumEvent } from 'telegram/events/Album.js';
-import { EditedMessageEvent } from 'telegram/events/EditedMessage.js';
-import { PostHelper } from '../helpers/post.helper.js';
+import type { Command, CommandScope } from 'telebuilder/types';
+import type { TelegramClient } from 'telegram';
+import type { NewMessageEvent } from 'telegram/events';
+import type { AlbumEvent } from 'telegram/events/Album.js';
+import type { EditedMessageEvent } from 'telegram/events/EditedMessage.js';
+import PostHelper from '../helpers/post.helper.js';
 import { ChannelExportService } from '../services/channel-export.service.js';
 import { PostService } from '../services/post.service.js';
 
@@ -48,7 +48,7 @@ export class StartCommand implements Command {
 
     PostHelper.setTitle = (content?: string) => {
       const match = content?.match(addressRegex);
-      return match ? channelId + ` [${match[0].trim()}]` : channelId;
+      return match ? `${channelId} [${match[0].trim()}]` : channelId;
     };
     PostHelper.extraContentProcessor = (content: string) => {
       return content.replace(addressRegex, '');

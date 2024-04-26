@@ -1,10 +1,10 @@
 import { injectable, inject } from "telebuilder/decorators";
-import { ChannelPost } from "../types.js";
+import type { ChannelPost } from "../types.js";
 import { join as joinPaths } from "node:path";
 import { writeFile, readFile, unlink } from "node:fs/promises";
 import { config } from "telebuilder/config";
-import { PostHelper } from '../helpers/post.helper.js';
-import { Api, TelegramClient } from "telegram";
+import PostHelper from '../helpers/post.helper.js';
+import type { Api, TelegramClient } from "telegram";
 import { getImageFormat } from "telebuilder/utils";
 import { GitService } from "./git.service.js";
 import { ChannelSyncService } from "./channel-sync.service.js";
@@ -193,7 +193,7 @@ export class PostService {
       }
 
       if (msg.photo || msg.video || msg.gif) {
-        let thumb;
+        let thumb = undefined;
         if (msg.photo) thumb = 1;
         else if (msg.video) thumb = 0;
 

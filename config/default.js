@@ -1,4 +1,4 @@
-import { readFile } from 'fs/promises';
+import { readFile } from 'node:fs/promises';
 
 if (process.env.NODE_ENV?.toLocaleLowerCase() !== 'production') {
     (await import('dotenv')).config();
@@ -9,7 +9,7 @@ const version = JSON.parse(await readFile(new URL('../package.json', import.meta
 export default {
     botConfig: {
         botDataDir: process.env.TG_BOT_DATA_DIR || './botData', // absolute path or relative to the project root
-        apiId: parseInt(process.env.TG_BOT_API_ID),
+        apiId: Number.parseInt(process.env.TG_BOT_API_ID),
         apiHash: process.env.TG_BOT_API_HASH,
         token: process.env.TG_BOT_TOKEN,
         appVersion: process.env.TG_BOT_APP_VERSION || version,

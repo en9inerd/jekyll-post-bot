@@ -1,9 +1,9 @@
 import { client, inject, injectable } from 'telebuilder/decorators';
 import { getImageFormat } from 'telebuilder/utils';
-import { Api, TelegramClient } from 'telegram';
+import { Api, type TelegramClient } from 'telegram';
 import { GitService } from './git.service.js';
-import { readFile, writeFile, readdir } from 'fs/promises';
-import { join as joinPaths } from 'path';
+import { readFile, writeFile, readdir } from 'node:fs/promises';
+import { join as joinPaths } from 'node:path';
 import { config } from 'telebuilder/config';
 
 const channelId = config.get<string>('botConfig.channelId');

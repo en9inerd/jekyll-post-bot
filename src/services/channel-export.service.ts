@@ -1,12 +1,12 @@
 import { client, inject, injectable } from 'telebuilder/decorators';
-import { ChannelPost, ExportedMessage, TextEntity } from '../types.js';
+import type { ChannelPost, ExportedMessage, TextEntity } from '../types.js';
 import { config } from 'telebuilder/config';
 import { join as joinPaths } from 'node:path';
 import { readFile, mkdir, readdir, access } from 'node:fs/promises';
-import { PostHelper } from '../helpers/post.helper.js';
+import PostHelper from '../helpers/post.helper.js';
 import { GitService } from './git.service.js';
 import { PostService } from './post.service.js';
-import { Api, TelegramClient } from 'telegram';
+import type { Api, TelegramClient } from 'telegram';
 
 @injectable
 export class ChannelExportService {

@@ -1,8 +1,8 @@
 import { config } from 'telebuilder/config';
 import { command, handler, inject, params } from 'telebuilder/decorators';
-import { Command, CommandParamsSchema, CommandScope, MessageWithParams } from 'telebuilder/types';
-import { NewMessageEvent } from 'telegram/events/index.js';
-import { SyncChannelInfoParams } from '../types.js';
+import type { Command, CommandParamsSchema, CommandScope, MessageWithParams } from 'telebuilder/types';
+import type { NewMessageEvent } from 'telegram/events/index.js';
+import type { SyncChannelInfoParams } from '../types.js';
 import { GitService } from '../services/git.service.js';
 import { ChannelSyncService } from '../services/channel-sync.service.js';
 import { formatErrorMessage } from 'telebuilder/utils';
