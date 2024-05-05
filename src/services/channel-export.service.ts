@@ -145,7 +145,7 @@ export class ChannelExportService {
     }
 
     for (const post of this.posts) {
-      await this.postService.savePosts(post);
+      await this.postService.savePost(post);
     }
     await this.gitService.commitAndPush('Add initial posts');
 

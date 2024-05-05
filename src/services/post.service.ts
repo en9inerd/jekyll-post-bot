@@ -36,7 +36,7 @@ export class PostService {
   @inject(ChannelSyncService)
   private channelSyncService!: ChannelSyncService;
 
-  public async savePosts(post: ChannelPost, mediaFiles?: Buffer[]): Promise<void> {
+  public async savePost(post: ChannelPost, mediaFiles?: Buffer[]): Promise<void> {
     const filename = `${post.id}.md`;
     const filepath = joinPaths(this.postsDir, filename);
 
@@ -73,11 +73,11 @@ export class PostService {
     const postId = post.id;
     const editablePostId = await PostHelper.getEditablePostId(post);
     const index = postId - editablePostId;
-    const num = (await PostHelper.getPostImagePaths(editablePostId))?.length;
+    const numOfMediaFiles = (await PostHelper.getPostImagePaths(editablePostId))?.length;
 
     if (post.content) {
       post.id = editablePostId;
-      if (num > 0) post.mediaSource = Array(num).fill(post.mediaSource[0]);
+      if (numOfMediaFiles > 0) post.mediaSource = Array(numOfMediaFiles).fill(post.mediaSource[0]);
 
       PostHelper.addFrontMatter(post);
       if (PostHelper.extraContentProcessor) {
@@ -216,7 +216,7 @@ export class PostService {
       );
     }
     else {
-      await this.savePosts(post, mediaFiles);
+      await this.savePost(post, mediaFiles);
     }
 
     if (commitAndPush) {
