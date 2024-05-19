@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node dist/entry.js",
     "start:watch": "nodemon src/entry.ts --watch src --watch ../telebuilder --ext ts,json --delay 1",
-    "lint": "biome .",
+    "lint": "biome lint .",
     "build": "tsc --build",
     "clean": "tsc --build --clean",
     "postbuild": "cp -r package.json config dist",
