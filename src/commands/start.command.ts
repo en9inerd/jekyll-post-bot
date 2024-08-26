@@ -62,6 +62,12 @@ export class StartCommand implements Command {
   })
   public async entryHandler(event: NewMessageEvent): Promise<void> {
     if (!event.client || !event?.message?.senderId) return;
+
+    // biome-ignore lint/style/useTemplate: <explanation>
+    const message = `Hello, ${event.message.senderId}! Here are the available commands:\n` +
+      '/delete_post - Delete a post from blog by id, params: ids (string, required), revoke (boolean, optional)\n' +
+      '/sync_channel_info - Sync channel info, params: logo (boolean, required), stat (boolean, required)\n';
+    await event.client.sendMessage(event.message.senderId, { message });
   }
 
   @handler({
