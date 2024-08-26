@@ -1,3 +1,11 @@
+## [1.0.9](https://github.com/en9inerd/jekyll-post-bot/compare/v1.0.8...v1.0.9) (2024-08-26)
+
+
+### Bug Fixes
+
+* Add available commands message to entryHandler ([ac68f5c](https://github.com/en9inerd/jekyll-post-bot/commit/ac68f5c1852c0f53946363e821f0fd1865e1228c))
+* update dependencies ([e48d6e5](https://github.com/en9inerd/jekyll-post-bot/commit/e48d6e5392e9af3b955609f701baf00375cb5f02))
+
 ## [1.0.8](https://github.com/en9inerd/jekyll-post-bot/compare/v1.0.7...v1.0.8) (2024-04-26)
 
 
