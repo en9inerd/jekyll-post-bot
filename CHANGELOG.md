@@ -1,3 +1,10 @@
+## [1.0.10](https://github.com/en9inerd/jekyll-post-bot/compare/v1.0.9...v1.0.10) (2024-08-31)
+
+
+### Bug Fixes
+
+* increase thumbnail size ([3b404e6](https://github.com/en9inerd/jekyll-post-bot/commit/3b404e6b0eaed6cc073b725b62d7efafd245d287))
+
 ## [1.0.9](https://github.com/en9inerd/jekyll-post-bot/compare/v1.0.8...v1.0.9) (2024-08-26)
 
 
