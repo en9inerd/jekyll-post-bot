@@ -57,7 +57,6 @@ export class SyncChannelInfoCommand implements Command {
     try {
       await this.channelSyncService.syncChannelInfo({
         logo: params.logo,
-        numOfPosts: params.stat,
         numOfSubscribers: params.stat,
       });
 

@@ -7,7 +7,6 @@ import PostHelper from '../helpers/post.helper.js';
 import type { Api, TelegramClient } from "telegram";
 import { getImageFormat } from "telebuilder/utils";
 import { GitService } from "./git.service.js";
-import { ChannelSyncService } from "./channel-sync.service.js";
 
 @injectable
 export class PostService {
@@ -32,9 +31,6 @@ export class PostService {
 
   @inject(GitService)
   private gitService!: GitService;
-
-  @inject(ChannelSyncService)
-  private channelSyncService!: ChannelSyncService;
 
   public async savePost(post: ChannelPost, mediaFiles?: Buffer[]): Promise<void> {
     const filename = `${post.id}.md`;
@@ -61,11 +57,6 @@ export class PostService {
         'binary'
       );
       await this.gitService.add(relDestImageFilePath);
-    });
-
-    // update the number of posts in the _config.yml file
-    await this.channelSyncService.syncChannelInfo({
-      numOfPosts: true
     });
   }
 
@@ -117,11 +108,6 @@ export class PostService {
         }
       }
     }
-
-    // update the number of posts in the _config.yml file
-    await this.channelSyncService.syncChannelInfo({
-      numOfPosts: true
-    });
 
     await this.gitService.commitAndPush(`Delete post(s): ${ids}`);
   }
