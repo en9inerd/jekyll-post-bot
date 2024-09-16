@@ -26,8 +26,7 @@ export class ChannelSyncService {
 
   public async syncChannelInfo(syncFlags: {
     logo?: boolean,
-    numOfSubscribers?: boolean,
-    numOfPosts?: boolean
+    numOfSubscribers?: boolean
   }) {
     let configFile: string | undefined;
 
@@ -50,12 +49,6 @@ export class ChannelSyncService {
         configFile = await readFile(this.absPathToConfig, 'utf-8');
         configFile = configFile.replace(/num_of_subscribers: \d+/, `num_of_subscribers: ${channelInfo.participantsCount}`);
       }
-    }
-
-    if (syncFlags.numOfPosts) {
-      if (!configFile) configFile = await readFile(this.absPathToConfig, 'utf-8');
-      const numberOfPosts = (await readdir(this.postsDir).catch(() => [])).length;
-      configFile = configFile.replace(/num_of_posts: \d+/, `num_of_posts: ${numberOfPosts}`);
     }
 
     if (configFile) await writeFile(this.absPathToConfig, configFile, 'utf-8');
